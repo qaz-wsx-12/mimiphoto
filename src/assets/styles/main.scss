@@ -1,0 +1,225 @@
+// ============================================================
+// MimicPhoto Main Styles
+// ============================================================
+
+@import './variables';
+@import './mixins';
+@import './reset';
+
+// ---------- Global Layout Utilities ----------
+.container {
+  width: 100%;
+  max-width: $max-content-width;
+  margin: 0 auto;
+  padding: 0 $space-6;
+
+  @include md {
+    padding: 0 $space-8;
+  }
+}
+
+.section {
+  padding: $space-16 0;
+
+  @include lg {
+    padding: $space-20 0;
+  }
+}
+
+.section-title {
+  text-align: center;
+  margin-bottom: $space-12;
+
+  h2 {
+    font-size: $font-size-3xl;
+    margin-bottom: $space-4;
+    @include gradient-text;
+
+    @include md {
+      font-size: $font-size-4xl;
+    }
+  }
+
+  p {
+    font-size: $font-size-lg;
+    color: $color-text-secondary;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+}
+
+// ---------- Button Base Classes ----------
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $space-2;
+  padding: $space-3 $space-6;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-lg;
+  @include transition(transform, box-shadow);
+  white-space: nowrap;
+  user-select: none;
+  text-decoration: none;
+
+  &:hover {
+    transform: translateY(-1px);
+    color: inherit;
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &--primary {
+    background: $gradient-primary;
+    color: $color-text-on-primary;
+    box-shadow: $shadow-md;
+
+    &:hover {
+      box-shadow: $shadow-glow;
+      color: $color-text-on-primary;
+    }
+  }
+
+  &--secondary {
+    background: transparent;
+    color: $color-text;
+    border: 1px solid $color-border-light;
+
+    &:hover {
+      background: $color-bg-hover;
+      border-color: $color-primary;
+    }
+  }
+
+  &--ghost {
+    background: transparent;
+    color: $color-text-secondary;
+
+    &:hover {
+      color: $color-text;
+      background: rgba($color-primary, 0.08);
+    }
+  }
+
+  &--sm {
+    padding: $space-2 $space-4;
+    font-size: $font-size-xs;
+  }
+
+  &--lg {
+    padding: $space-4 $space-8;
+    font-size: $font-size-base;
+  }
+
+  &--icon {
+    padding: $space-3;
+    border-radius: $radius-md;
+  }
+}
+
+// ---------- Card Base Class ----------
+.card {
+  background: $color-bg-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-xl;
+  @include transition(border-color, box-shadow);
+
+  &:hover {
+    border-color: $color-border-light;
+    box-shadow: $shadow-lg;
+  }
+}
+
+// ---------- Badge Utility ----------
+.badge {
+  @include badge($color-primary);
+
+  &--hot {
+    @include badge($color-error);
+  }
+
+  &--free {
+    @include badge($color-success);
+  }
+
+  &--new {
+    @include badge($color-secondary);
+  }
+}
+
+// ---------- Grid Utilities ----------
+.grid-2 {
+  @include grid(2);
+}
+
+.grid-3 {
+  @include grid(3);
+}
+
+.grid-4 {
+  @include grid(4);
+}
+
+.grid-auto {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: $space-6;
+}
+
+// ---------- Animations ----------
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out both;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out both;
+}
+
+// Stagger delays
+@for $i from 1 through 12 {
+  .delay-#{$i} {
+    animation-delay: #{$i * 0.08}s;
+  }
+}
