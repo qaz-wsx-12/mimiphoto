@@ -8,6 +8,10 @@ export type ToolCategory = 'image' | 'video'
 /** Tool status badge */
 export type ToolBadge = 'hot' | 'free' | 'new' | null
 
+/** Editor control type */
+export type EditorControlType =
+  'sliders' | 'prompt' | 'multi-upload' | 'dual-upload' | 'time-slider'
+
 /** A single AI tool definition */
 export interface Tool {
   id: string
@@ -20,6 +24,29 @@ export interface Tool {
   icon: string
   href: string
   features?: string[]
+  editorType: EditorControlType
+  /** Tool-specific controls config */
+  controls?: {
+    /** For prompt type: placeholder text */
+    promptPlaceholder?: string
+    /** For multi-upload: max files */
+    maxFiles?: number
+    /** For sliders: custom slider definitions */
+    sliders?: Array<{
+      label: string
+      min: number
+      max: number
+      step: number
+      defaultValue: number
+    }>
+    /** Additional settings like quality, duration, etc. */
+    settings?: Array<{
+      label: string
+      type: 'select' | 'toggle' | 'number'
+      options?: string[]
+      defaultValue: string | number | boolean
+    }>
+  }
 }
 
 /** Tool category with tools list */

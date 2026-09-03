@@ -27,6 +27,15 @@ const imageTools: Tool[] = [
     icon: '😊',
     href: '/apps/face-expression-editor',
     features: ['Open/close eyes', 'Adjust smiles', 'Head rotation', 'Eye direction'],
+    editorType: 'sliders',
+    controls: {
+      sliders: [
+        { label: 'Head Tilt', min: -1, max: 1, step: 0.01, defaultValue: 0 },
+        { label: 'Eye Openness', min: 0, max: 1, step: 0.01, defaultValue: 0.5 },
+        { label: 'Smile', min: 0, max: 1, step: 0.01, defaultValue: 0.5 },
+        { label: 'Mouth Opening', min: 0, max: 1, step: 0.01, defaultValue: 0.5 },
+      ],
+    },
   },
   {
     id: 'ai-photo-editor',
@@ -40,6 +49,31 @@ const imageTools: Tool[] = [
     icon: '🖌️',
     href: '/apps/ai-photo-editor',
     features: ['Text-based editing', 'Object removal', 'Style transfer', 'Inpainting'],
+    editorType: 'multi-upload',
+    controls: {
+      maxFiles: 10,
+      promptPlaceholder: 'Describe how to edit the image...',
+      settings: [
+        {
+          label: 'Mode',
+          type: 'select',
+          options: ['Edit', 'Create', 'Restyle'],
+          defaultValue: 'Edit',
+        },
+        {
+          label: 'Aspect Ratio',
+          type: 'select',
+          options: ['1:1', '4:3', '16:9', '3:4', '9:16'],
+          defaultValue: '1:1',
+        },
+        {
+          label: 'Resolution',
+          type: 'select',
+          options: ['512x512', '768x768', '1024x1024'],
+          defaultValue: '768x768',
+        },
+      ],
+    },
   },
   {
     id: 'create-image',
@@ -52,6 +86,30 @@ const imageTools: Tool[] = [
     icon: '🎨',
     href: '/apps/create-image',
     features: ['Text to image', 'Multiple styles', 'High resolution'],
+    editorType: 'prompt',
+    controls: {
+      promptPlaceholder: 'Describe the image you want to create...',
+      settings: [
+        {
+          label: 'Style',
+          type: 'select',
+          options: ['Photorealistic', 'Anime', 'Digital Art', 'Oil Painting', 'Watercolor'],
+          defaultValue: 'Photorealistic',
+        },
+        {
+          label: 'Aspect Ratio',
+          type: 'select',
+          options: ['1:1', '4:3', '16:9', '3:4', '9:16'],
+          defaultValue: '1:1',
+        },
+        {
+          label: 'Quality',
+          type: 'select',
+          options: ['Standard', 'HD', 'Ultra HD'],
+          defaultValue: 'HD',
+        },
+      ],
+    },
   },
   {
     id: 'couple-photo-maker',
@@ -64,6 +122,17 @@ const imageTools: Tool[] = [
     icon: '💑',
     href: '/apps/couple-photo-maker',
     features: ['Wedding styles', 'Beach scenes', 'Vintage looks'],
+    editorType: 'dual-upload',
+    controls: {
+      settings: [
+        {
+          label: 'Scene',
+          type: 'select',
+          options: ['Wedding', 'Beach', 'Vintage', 'Studio', 'Nature'],
+          defaultValue: 'Wedding',
+        },
+      ],
+    },
   },
   {
     id: 'add-person-to-photo',
@@ -76,6 +145,7 @@ const imageTools: Tool[] = [
     icon: '👤',
     href: '/apps/add-person-to-photo',
     features: ['Natural blending', 'Lighting match', 'Shadow matching'],
+    editorType: 'dual-upload',
   },
   {
     id: 'image-effects',
@@ -88,6 +158,13 @@ const imageTools: Tool[] = [
     icon: '✨',
     href: '/apps/image-effects',
     features: ['Artistic styles', 'Filters', 'Transformations'],
+    editorType: 'sliders',
+    controls: {
+      sliders: [
+        { label: 'Intensity', min: 0, max: 1, step: 0.01, defaultValue: 0.7 },
+        { label: 'Style Strength', min: 0, max: 1, step: 0.01, defaultValue: 0.5 },
+      ],
+    },
   },
   {
     id: 'photo-pose-editor',
@@ -100,6 +177,7 @@ const imageTools: Tool[] = [
     icon: '🤸',
     href: '/apps/photo-pose-editor',
     features: ['Pose transfer', 'Preset poses', 'Custom references'],
+    editorType: 'dual-upload',
   },
   {
     id: 'photo-angle-changer',
@@ -112,6 +190,13 @@ const imageTools: Tool[] = [
     icon: '📐',
     href: '/apps/photo-angle-changer',
     features: ['Angle adjustment', 'Perspective shift', 'Multi-angle views'],
+    editorType: 'sliders',
+    controls: {
+      sliders: [
+        { label: 'Horizontal Angle', min: -90, max: 90, step: 1, defaultValue: 0 },
+        { label: 'Vertical Angle', min: -45, max: 45, step: 1, defaultValue: 0 },
+      ],
+    },
   },
   {
     id: 'virtual-try-on',
@@ -124,6 +209,11 @@ const imageTools: Tool[] = [
     icon: '👔',
     href: '/apps/virtual-try-on',
     features: ['Clothing preview', 'Multiple outfits', 'Realistic fit'],
+    editorType: 'multi-upload',
+    controls: {
+      maxFiles: 2,
+      promptPlaceholder: 'Describe the outfit to try on...',
+    },
   },
   {
     id: 'relight',
@@ -136,11 +226,19 @@ const imageTools: Tool[] = [
     icon: '💡',
     href: '/apps/relight',
     features: ['Light adjustment', 'Mood lighting', 'Studio effects'],
+    editorType: 'sliders',
+    controls: {
+      sliders: [
+        { label: 'Brightness', min: -1, max: 1, step: 0.01, defaultValue: 0 },
+        { label: 'Warmth', min: -1, max: 1, step: 0.01, defaultValue: 0 },
+        { label: 'Contrast', min: -1, max: 1, step: 0.01, defaultValue: 0 },
+      ],
+    },
   },
   {
     id: 'face-swap',
     name: 'Face Swap',
-    slug: 'face-swap',
+    slug: 'face-swapper',
     description: 'Swap faces in photos',
     category: 'image',
     badge: 'free',
@@ -148,6 +246,7 @@ const imageTools: Tool[] = [
     icon: '🔄',
     href: '/apps/face-swapper',
     features: ['Multi-face support', 'Natural blending', 'High quality'],
+    editorType: 'dual-upload',
   },
   {
     id: 'background-remove',
@@ -160,6 +259,7 @@ const imageTools: Tool[] = [
     icon: '🖼️',
     href: '/apps/background-remove',
     features: ['Instant removal', 'Clean edges', 'Transparent output'],
+    editorType: 'sliders',
   },
   {
     id: 'unblur-image',
@@ -172,6 +272,13 @@ const imageTools: Tool[] = [
     icon: '🔍',
     href: '/apps/unblur-image',
     features: ['Sharpening', 'Noise reduction', 'Detail recovery'],
+    editorType: 'sliders',
+    controls: {
+      sliders: [
+        { label: 'Sharpness', min: 0, max: 1, step: 0.01, defaultValue: 0.7 },
+        { label: 'Noise Reduction', min: 0, max: 1, step: 0.01, defaultValue: 0.5 },
+      ],
+    },
   },
   {
     id: 'upscale',
@@ -184,6 +291,13 @@ const imageTools: Tool[] = [
     icon: '⬆️',
     href: '/apps/upscale',
     features: ['4x upscaling', 'Detail preservation', 'AI enhancement'],
+    editorType: 'sliders',
+    controls: {
+      sliders: [
+        { label: 'Scale Factor', min: 2, max: 4, step: 1, defaultValue: 2 },
+        { label: 'Detail Enhancement', min: 0, max: 1, step: 0.01, defaultValue: 0.6 },
+      ],
+    },
   },
   {
     id: 'colorization',
@@ -196,6 +310,7 @@ const imageTools: Tool[] = [
     icon: '🌈',
     href: '/apps/colorization',
     features: ['Natural colors', 'Historical photos', 'Auto-detect'],
+    editorType: 'sliders',
   },
   {
     id: 'image-translator',
@@ -208,6 +323,18 @@ const imageTools: Tool[] = [
     icon: '🌐',
     href: '/apps/image-translator',
     features: ['Multi-language', 'Layout preservation', 'Font matching'],
+    editorType: 'prompt',
+    controls: {
+      promptPlaceholder: 'Enter text to translate...',
+      settings: [
+        {
+          label: 'Target Language',
+          type: 'select',
+          options: ['English', 'Chinese', 'Japanese', 'Korean', 'Spanish', 'French'],
+          defaultValue: 'English',
+        },
+      ],
+    },
   },
   {
     id: 'object-remover',
@@ -220,6 +347,10 @@ const imageTools: Tool[] = [
     icon: '🗑️',
     href: '/apps/object-remover',
     features: ['Smart removal', 'Background fill', 'Clean results'],
+    editorType: 'prompt',
+    controls: {
+      promptPlaceholder: 'Describe the object to remove...',
+    },
   },
   {
     id: 'remove-reflection',
@@ -232,6 +363,35 @@ const imageTools: Tool[] = [
     icon: '💎',
     href: '/apps/remove-reflection',
     features: ['Glare removal', 'Glass reflection', 'Lens flare'],
+    editorType: 'sliders',
+    controls: {
+      sliders: [{ label: 'Removal Strength', min: 0, max: 1, step: 0.01, defaultValue: 0.7 }],
+    },
+  },
+  {
+    id: 'photo-leap',
+    name: 'Time Travel Photo Generator',
+    slug: 'photo-leap',
+    description:
+      'Transform your photos into different historical time periods with our AI time travel photo generator',
+    category: 'image',
+    badge: null,
+    creditCost: '15 cr',
+    icon: '⏳',
+    href: '/apps/photo-leap',
+    features: ['Historical eras', 'Time slider', 'Ancient to future'],
+    editorType: 'time-slider',
+    controls: {
+      sliders: [
+        {
+          label: 'Time Period',
+          min: 0,
+          max: 100,
+          step: 1,
+          defaultValue: 50,
+        },
+      ],
+    },
   },
 ]
 
@@ -239,7 +399,7 @@ const videoTools: Tool[] = [
   {
     id: 'create-video',
     name: 'Create Video',
-    slug: 'create-video',
+    slug: 'video-generator',
     description: 'Generate videos from text prompts using advanced AI models',
     category: 'video',
     badge: 'hot',
@@ -247,6 +407,24 @@ const videoTools: Tool[] = [
     icon: '🎬',
     href: '/apps/video-generator',
     features: ['Text to video', 'Multiple models', 'High quality'],
+    editorType: 'prompt',
+    controls: {
+      promptPlaceholder: 'Describe the video you want to create...',
+      settings: [
+        {
+          label: 'Duration',
+          type: 'select',
+          options: ['3s', '5s', '10s'],
+          defaultValue: '5s',
+        },
+        {
+          label: 'Resolution',
+          type: 'select',
+          options: ['480p', '720p', '1080p'],
+          defaultValue: '720p',
+        },
+      ],
+    },
   },
   {
     id: 'photo-to-video',
@@ -259,6 +437,36 @@ const videoTools: Tool[] = [
     icon: '🎞️',
     href: '/apps/photo-to-video',
     features: ['Photo animation', 'Natural motion', 'AI-powered'],
+    editorType: 'multi-upload',
+    controls: {
+      maxFiles: 1,
+      promptPlaceholder: 'Describe the motion...',
+      settings: [
+        {
+          label: 'Quality Mode',
+          type: 'select',
+          options: ['Standard', 'High', 'Ultra'],
+          defaultValue: 'High',
+        },
+        {
+          label: 'Duration',
+          type: 'select',
+          options: ['3s', '5s', '8s'],
+          defaultValue: '5s',
+        },
+        {
+          label: 'Resolution',
+          type: 'select',
+          options: ['480p', '720p', '1080p'],
+          defaultValue: '720p',
+        },
+        {
+          label: 'Generate Audio',
+          type: 'toggle',
+          defaultValue: false,
+        },
+      ],
+    },
   },
   {
     id: 'drone-fpv-video',
@@ -271,6 +479,11 @@ const videoTools: Tool[] = [
     icon: '🚁',
     href: '/apps/drone-fpv-video',
     features: ['Flight path drawing', 'Cinematic effects', 'AI generation'],
+    editorType: 'multi-upload',
+    controls: {
+      maxFiles: 1,
+      promptPlaceholder: 'Describe the flight path...',
+    },
   },
   {
     id: 'motion-control',
@@ -283,6 +496,7 @@ const videoTools: Tool[] = [
     icon: '🎯',
     href: '/apps/motion-control',
     features: ['Motion transfer', 'Custom paths', 'Smooth animation'],
+    editorType: 'dual-upload',
   },
   {
     id: 'talking-photo',
@@ -295,6 +509,11 @@ const videoTools: Tool[] = [
     icon: '🗣️',
     href: '/apps/talking-photo',
     features: ['Lip sync', 'Facial animation', 'Audio driven'],
+    editorType: 'multi-upload',
+    controls: {
+      maxFiles: 2,
+      promptPlaceholder: 'Upload photo and audio file...',
+    },
   },
   {
     id: 'video-effects',
@@ -307,6 +526,18 @@ const videoTools: Tool[] = [
     icon: '🎥',
     href: '/apps/video-effects',
     features: ['Style transfer', 'Filters', 'Transitions'],
+    editorType: 'multi-upload',
+    controls: {
+      maxFiles: 1,
+      settings: [
+        {
+          label: 'Effect',
+          type: 'select',
+          options: ['Cinematic', 'Anime', 'Vintage', 'Neon', 'Dreamy'],
+          defaultValue: 'Cinematic',
+        },
+      ],
+    },
   },
   {
     id: 'hug-kiss-video',
@@ -319,6 +550,7 @@ const videoTools: Tool[] = [
     icon: '🤗',
     href: '/apps/hug-kiss-video',
     features: ['AI animation', 'Multiple styles', 'Realistic motion'],
+    editorType: 'dual-upload',
   },
   {
     id: 'video-upscaler',
@@ -331,6 +563,18 @@ const videoTools: Tool[] = [
     icon: '📈',
     href: '/apps/video-upscaler',
     features: ['Resolution boost', 'Frame enhancement', 'AI sharpening'],
+    editorType: 'multi-upload',
+    controls: {
+      maxFiles: 1,
+      settings: [
+        {
+          label: 'Target Resolution',
+          type: 'select',
+          options: ['720p', '1080p', '4K'],
+          defaultValue: '1080p',
+        },
+      ],
+    },
   },
   {
     id: 'wan-video',
@@ -343,6 +587,24 @@ const videoTools: Tool[] = [
     icon: '🌊',
     href: '/apps/wan-video',
     features: ['Voice sync', 'Lifelike motion', 'High quality'],
+    editorType: 'prompt',
+    controls: {
+      promptPlaceholder: 'Describe the video scene...',
+      settings: [
+        {
+          label: 'Resolution',
+          type: 'select',
+          options: ['480p', '720p', '1080p'],
+          defaultValue: '720p',
+        },
+        {
+          label: 'Duration',
+          type: 'select',
+          options: ['3s', '5s', '8s'],
+          defaultValue: '5s',
+        },
+      ],
+    },
   },
   {
     id: 'video-watermark-remover',
@@ -355,6 +617,10 @@ const videoTools: Tool[] = [
     icon: '🚷',
     href: '/apps/video-watermark-remover',
     features: ['Logo removal', 'Text overlay removal', 'Up to 10 min'],
+    editorType: 'multi-upload',
+    controls: {
+      maxFiles: 1,
+    },
   },
 ]
 
@@ -382,7 +648,7 @@ export function getToolCategoryGroups(): ToolCategoryGroup[] {
 export function getTopChoiceTools(): Tool[] {
   const slugs = [
     'create-image',
-    'create-video',
+    'video-generator',
     'face-expression-editor',
     'ai-photo-editor',
     'virtual-try-on',
@@ -462,6 +728,7 @@ export const creditCosts: CreditCostItem[] = [
   { name: 'Colorization', credits: 'Free', category: 'image' },
   { name: 'Unblur Image', credits: '5 cr', category: 'image' },
   { name: 'Image Effects', credits: '19 cr', category: 'image' },
+  { name: 'Time Travel Photo', credits: '15 cr', category: 'image' },
   // Video Tools
   { name: 'Photo to Video (5s)', credits: '75 cr', category: 'video' },
   { name: 'Talking Photo (per sec)', credits: '3 cr', category: 'video' },
@@ -574,7 +841,6 @@ export const pricingFAQ: FAQItem[] = [
 
 // ---------- Mock API Functions ----------
 
-/** Simulate an API call with artificial delay */
 async function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }

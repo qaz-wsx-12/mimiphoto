@@ -8,6 +8,9 @@
           {{ tool.name }}
         </h1>
         <p class="tool-page__desc">{{ tool.description }}</p>
+        <span v-if="tool.creditCost" class="tool-page__cost-badge">
+          Cost: {{ tool.creditCost }}
+        </span>
       </div>
 
       <!-- Not Found -->
@@ -17,9 +20,8 @@
         <router-link to="/apps/explore" class="btn btn--primary"> Explore all tools </router-link>
       </div>
 
-      <!-- Editor Workspace -->
-      <div v-if="tool" class="tool-page__workspace">
-        <!-- Upload Area -->
+      <!-- ========== EDITOR: Sliders (default) ========== -->
+      <div v-if="tool && tool.editorType === 'sliders'" class="tool-page__workspace">
         <div
           v-if="!editorStore.previewUrl"
           class="tool-page__upload"
@@ -44,9 +46,7 @@
           </div>
         </div>
 
-        <!-- Editor Panel -->
         <div v-else class="tool-page__editor">
-          <!-- Image Preview -->
           <div class="tool-page__preview">
             <div class="tool-page__preview-label">Original</div>
             <img
@@ -54,8 +54,6 @@
               alt="Uploaded photo"
               class="tool-page__preview-img"
             />
-
-            <!-- Result Preview -->
             <div v-if="editorStore.resultUrl" class="tool-page__result">
               <div class="tool-page__preview-label">Result</div>
               <img
@@ -64,16 +62,13 @@
                 class="tool-page__preview-img"
               />
             </div>
-
             <button class="btn btn--ghost btn--sm tool-page__change-btn" @click="handleClear">
               Change photo
             </button>
           </div>
 
-          <!-- Controls Panel -->
           <div class="tool-page__controls">
-            <!-- Quick Presets -->
-            <div class="tool-page__section">
+            <div v-if="editorStore.presets.length" class="tool-page__section">
               <h4 class="tool-page__section-title">Quick Presets</h4>
               <div class="tool-page__presets">
                 <button
@@ -90,8 +85,7 @@
               </div>
             </div>
 
-            <!-- Sliders -->
-            <div class="tool-page__section">
+            <div v-if="editorStore.sliders.length" class="tool-page__section">
               <h4 class="tool-page__section-title">Adjustments</h4>
               <div class="tool-page__sliders">
                 <div
@@ -116,18 +110,328 @@
               </div>
             </div>
 
-            <!-- Process Button -->
             <button
               class="btn btn--primary btn--lg tool-page__process-btn"
               :disabled="editorStore.isProcessing"
               @click="handleProcess"
             >
               <span v-if="editorStore.isProcessing" class="tool-page__spinner"></span>
-              <span v-else>✨ Enhance</span>
+              <span v-else>✨ Generate</span>
             </button>
+          </div>
+        </div>
+      </div>
 
-            <!-- Credits Info -->
-            <p v-if="tool" class="tool-page__credits">Cost: {{ tool.creditCost }}</p>
+      <!-- ========== EDITOR: Time Slider ========== -->
+      <div v-if="tool && tool.editorType === 'time-slider'" class="tool-page__workspace">
+        <div
+          v-if="!editorStore.previewUrl"
+          class="tool-page__upload"
+          :class="{ 'tool-page__upload--dragging': isDragging }"
+          @dragenter="onDragEnter"
+          @dragover="onDragOver"
+          @dragleave="onDragLeave"
+          @drop="onDrop"
+          @click="triggerFileInput"
+        >
+          <input
+            ref="fileInputRef"
+            type="file"
+            :accept="acceptedFormats"
+            class="tool-page__file-input"
+            @change="onFileInput"
+          />
+          <div class="tool-page__upload-content">
+            <span class="tool-page__upload-icon">⏳</span>
+            <h3 class="tool-page__upload-title">
+              Upload a photo to start your time travel journey
+            </h3>
+            <p class="tool-page__upload-hint">PNG, JPG, WEBP (max 15MB)</p>
+          </div>
+        </div>
+
+        <div v-else class="tool-page__editor">
+          <div class="tool-page__preview">
+            <div class="tool-page__preview-label">Original Photo</div>
+            <img
+              :src="editorStore.previewUrl!"
+              alt="Uploaded photo"
+              class="tool-page__preview-img"
+            />
+            <div v-if="editorStore.resultUrl" class="tool-page__result">
+              <div class="tool-page__preview-label">Time Travel Result</div>
+              <img :src="editorStore.resultUrl" alt="Result" class="tool-page__preview-img" />
+            </div>
+            <button class="btn btn--ghost btn--sm tool-page__change-btn" @click="handleClear">
+              Change photo
+            </button>
+          </div>
+
+          <div class="tool-page__controls">
+            <div class="tool-page__section">
+              <h4 class="tool-page__section-title">Time Period</h4>
+              <div class="tool-page__time-slider">
+                <div class="tool-page__time-labels">
+                  <span>Ancient</span>
+                  <span>Victorian</span>
+                  <span>Future</span>
+                </div>
+                <div
+                  v-for="slider in editorStore.sliders"
+                  :key="slider.id"
+                  class="tool-page__slider"
+                >
+                  <input
+                    type="range"
+                    :min="slider.min"
+                    :max="slider.max"
+                    :step="slider.step"
+                    :value="slider.value"
+                    class="tool-page__range tool-page__range--large"
+                    @input="(e) => onSliderChange(slider.id, e)"
+                  />
+                  <div class="tool-page__slider-value-center">
+                    {{ getTimePeriodLabel(slider.value) }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button
+              class="btn btn--primary btn--lg tool-page__process-btn"
+              :disabled="editorStore.isProcessing"
+              @click="handleProcess"
+            >
+              <span v-if="editorStore.isProcessing" class="tool-page__spinner"></span>
+              <span v-else>⏳ Time Travel</span>
+            </button>
+            <p class="tool-page__credits">Cost: 15 credits per transformation</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== EDITOR: Prompt (text-to-image/video) ========== -->
+      <div v-if="tool && tool.editorType === 'prompt'" class="tool-page__workspace">
+        <div class="tool-page__prompt-editor">
+          <div class="tool-page__prompt-section">
+            <label class="tool-page__section-title">Prompt</label>
+            <textarea
+              v-model="promptText"
+              class="tool-page__textarea"
+              :placeholder="tool.controls?.promptPlaceholder || 'Enter your prompt...'"
+              rows="4"
+            ></textarea>
+          </div>
+
+          <div v-if="tool.controls?.settings" class="tool-page__settings-grid">
+            <div
+              v-for="setting in tool.controls.settings"
+              :key="setting.label"
+              class="tool-page__setting"
+            >
+              <label class="tool-page__setting-label">{{ setting.label }}</label>
+              <select
+                v-if="setting.type === 'select'"
+                v-model="settings[setting.label]"
+                class="tool-page__select"
+              >
+                <option v-for="opt in setting.options" :key="opt" :value="opt">{{ opt }}</option>
+              </select>
+              <label v-else-if="setting.type === 'toggle'" class="tool-page__toggle">
+                <input v-model="settings[setting.label]" type="checkbox" />
+                <span class="tool-page__toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div v-if="editorStore.resultUrl" class="tool-page__prompt-result">
+            <div class="tool-page__preview-label">Generated Result</div>
+            <img :src="editorStore.resultUrl" alt="Generated" class="tool-page__preview-img" />
+          </div>
+
+          <button
+            class="btn btn--primary btn--lg tool-page__process-btn"
+            :disabled="editorStore.isProcessing || !promptText.trim()"
+            @click="handlePromptProcess"
+          >
+            <span v-if="editorStore.isProcessing" class="tool-page__spinner"></span>
+            <span v-else>✨ Generate</span>
+          </button>
+          <p class="tool-page__credits">Cost: {{ tool.creditCost }}</p>
+        </div>
+      </div>
+
+      <!-- ========== EDITOR: Multi Upload ========== -->
+      <div v-if="tool && tool.editorType === 'multi-upload'" class="tool-page__workspace">
+        <div
+          v-if="!editorStore.previewUrl"
+          class="tool-page__upload"
+          :class="{ 'tool-page__upload--dragging': isDragging }"
+          @dragenter="onDragEnter"
+          @dragover="onDragOver"
+          @dragleave="onDragLeave"
+          @drop="onDrop"
+          @click="triggerFileInput"
+        >
+          <input
+            ref="fileInputRef"
+            type="file"
+            :accept="acceptedFormats"
+            :multiple="(tool.controls?.maxFiles ?? 1) > 1"
+            class="tool-page__file-input"
+            @change="onFileInput"
+          />
+          <div class="tool-page__upload-content">
+            <span class="tool-page__upload-icon">📁</span>
+            <h3 class="tool-page__upload-title">
+              Drop images here or click to upload
+              <span v-if="tool.controls?.maxFiles"> (up to {{ tool.controls.maxFiles }})</span>
+            </h3>
+            <p class="tool-page__upload-hint">JPG, PNG, WEBP · max 10MB</p>
+          </div>
+        </div>
+
+        <div v-else class="tool-page__editor">
+          <div class="tool-page__preview">
+            <div class="tool-page__preview-label">Uploaded</div>
+            <img :src="editorStore.previewUrl!" alt="Uploaded" class="tool-page__preview-img" />
+            <div v-if="editorStore.resultUrl" class="tool-page__result">
+              <div class="tool-page__preview-label">Result</div>
+              <img :src="editorStore.resultUrl" alt="Result" class="tool-page__preview-img" />
+            </div>
+            <button class="btn btn--ghost btn--sm tool-page__change-btn" @click="handleClear">
+              Change photo
+            </button>
+          </div>
+
+          <div class="tool-page__controls">
+            <div v-if="tool.controls?.promptPlaceholder" class="tool-page__section">
+              <label class="tool-page__section-title">Prompt</label>
+              <textarea
+                v-model="promptText"
+                class="tool-page__textarea"
+                :placeholder="tool.controls.promptPlaceholder"
+                rows="3"
+              ></textarea>
+            </div>
+
+            <div v-if="tool.controls?.settings" class="tool-page__section">
+              <div class="tool-page__settings-grid">
+                <div
+                  v-for="setting in tool.controls.settings"
+                  :key="setting.label"
+                  class="tool-page__setting"
+                >
+                  <label class="tool-page__setting-label">{{ setting.label }}</label>
+                  <select
+                    v-if="setting.type === 'select'"
+                    v-model="settings[setting.label]"
+                    class="tool-page__select"
+                  >
+                    <option v-for="opt in setting.options" :key="opt" :value="opt">
+                      {{ opt }}
+                    </option>
+                  </select>
+                  <label v-else-if="setting.type === 'toggle'" class="tool-page__toggle">
+                    <input v-model="settings[setting.label]" type="checkbox" />
+                    <span class="tool-page__toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <button
+              class="btn btn--primary btn--lg tool-page__process-btn"
+              :disabled="editorStore.isProcessing"
+              @click="handleProcess"
+            >
+              <span v-if="editorStore.isProcessing" class="tool-page__spinner"></span>
+              <span v-else>✨ Generate</span>
+            </button>
+            <p class="tool-page__credits">Cost: {{ tool.creditCost }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== EDITOR: Dual Upload (face swap, etc.) ========== -->
+      <div v-if="tool && tool.editorType === 'dual-upload'" class="tool-page__workspace">
+        <div v-if="!editorStore.previewUrl" class="tool-page__dual-upload">
+          <div
+            class="tool-page__upload tool-page__upload--half"
+            :class="{ 'tool-page__upload--dragging': isDragging }"
+            @dragenter="onDragEnter"
+            @dragover="onDragOver"
+            @dragleave="onDragLeave"
+            @drop="onDrop"
+            @click="triggerFileInput"
+          >
+            <input
+              ref="fileInputRef"
+              type="file"
+              :accept="acceptedFormats"
+              class="tool-page__file-input"
+              @change="onFileInput"
+            />
+            <div class="tool-page__upload-content">
+              <span class="tool-page__upload-icon">🖼️</span>
+              <h3 class="tool-page__upload-title">Target Image</h3>
+              <p class="tool-page__upload-hint">Drop or click to upload</p>
+            </div>
+          </div>
+          <div class="tool-page__dual-arrow">→</div>
+          <div class="tool-page__upload tool-page__upload--half">
+            <div class="tool-page__upload-content">
+              <span class="tool-page__upload-icon">🎭</span>
+              <h3 class="tool-page__upload-title">Source Face</h3>
+              <p class="tool-page__upload-hint">Drop or click to upload</p>
+            </div>
+          </div>
+        </div>
+
+        <div v-else class="tool-page__editor">
+          <div class="tool-page__preview">
+            <div class="tool-page__preview-label">Target</div>
+            <img :src="editorStore.previewUrl!" alt="Target" class="tool-page__preview-img" />
+            <div v-if="editorStore.resultUrl" class="tool-page__result">
+              <div class="tool-page__preview-label">Result</div>
+              <img :src="editorStore.resultUrl" alt="Result" class="tool-page__preview-img" />
+            </div>
+            <button class="btn btn--ghost btn--sm tool-page__change-btn" @click="handleClear">
+              Change photo
+            </button>
+          </div>
+
+          <div class="tool-page__controls">
+            <div v-if="tool.controls?.settings" class="tool-page__section">
+              <div class="tool-page__settings-grid">
+                <div
+                  v-for="setting in tool.controls.settings"
+                  :key="setting.label"
+                  class="tool-page__setting"
+                >
+                  <label class="tool-page__setting-label">{{ setting.label }}</label>
+                  <select
+                    v-if="setting.type === 'select'"
+                    v-model="settings[setting.label]"
+                    class="tool-page__select"
+                  >
+                    <option v-for="opt in setting.options" :key="opt" :value="opt">
+                      {{ opt }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <button
+              class="btn btn--primary btn--lg tool-page__process-btn"
+              :disabled="editorStore.isProcessing"
+              @click="handleProcess"
+            >
+              <span v-if="editorStore.isProcessing" class="tool-page__spinner"></span>
+              <span v-else>✨ Process</span>
+            </button>
+            <p class="tool-page__credits">Cost: {{ tool.creditCost }}</p>
           </div>
         </div>
       </div>
@@ -136,15 +440,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { getToolBySlug, processImage } from '@api/tools'
-import { useEditorStore } from '@stores/index'
-import { useFileUpload } from '@hooks/index'
+import { getToolBySlug, processImage } from '@/api/tools'
+import { useEditorStore } from '@/stores/index'
+import { useFileUpload } from '@/hooks/index'
 
 const route = useRoute()
 const editorStore = useEditorStore()
 const fileInputRef = ref<HTMLInputElement | null>(null)
+const promptText = ref('')
+const settings = reactive<Record<string, string | number | boolean>>({})
 
 const {
   isDragging,
@@ -157,47 +463,57 @@ const {
   clearFile,
 } = useFileUpload()
 
-// Get tool from route slug
 const toolSlug = ref(route.params.toolSlug as string)
 const tool = ref(getToolBySlug(toolSlug.value))
 
-// Initialize editor when tool changes
+const timePeriods = [
+  'Prehistoric',
+  'Ancient Egypt',
+  'Roman Empire',
+  'Medieval',
+  'Renaissance',
+  'Victorian (1850 CE)',
+  '1920s',
+  '1980s',
+  'Modern',
+  'Future',
+]
+
+function getTimePeriodLabel(value: number): string {
+  const index = Math.round((value / 100) * (timePeriods.length - 1))
+  return timePeriods[Math.min(index, timePeriods.length - 1)]
+}
+
+function initSettings(): void {
+  if (!tool.value?.controls?.settings) return
+  for (const s of tool.value.controls.settings) {
+    settings[s.label] = s.defaultValue
+  }
+}
+
 function initEditor(): void {
   if (!tool.value) return
+  promptText.value = ''
+  Object.keys(settings).forEach((k) => delete settings[k])
+  initSettings()
 
-  // Initialize based on tool type
-  if (tool.value.id === 'face-expression-editor') {
-    editorStore.initSliders([
-      { label: 'Head Tilt', min: -1, max: 1, step: 0.01, value: 0 },
-      { label: 'Eye Openness', min: 0, max: 1, step: 0.01, value: 0.5 },
-      { label: 'Smile', min: 0, max: 1, step: 0.01, value: 0.5 },
-      { label: 'Mouth Opening', min: 0, max: 1, step: 0.01, value: 0.5 },
-    ])
-    editorStore.initPresets([
-      {
-        label: 'Tilt Up',
-        value: { 'Head Tilt': 0.5, 'Eye Openness': 0.5, Smile: 0.5, 'Mouth Opening': 0.5 },
-      },
-      {
-        label: 'Turn Left',
-        value: { 'Head Tilt': -0.5, 'Eye Openness': 0.5, Smile: 0.5, 'Mouth Opening': 0.5 },
-      },
-      {
-        label: 'Turn Right',
-        value: { 'Head Tilt': 0.5, 'Eye Openness': 0.5, Smile: 0.5, 'Mouth Opening': 0.5 },
-      },
-      {
-        label: 'Tilt Down',
-        value: { 'Head Tilt': -0.3, 'Eye Openness': 0.3, Smile: 0.5, 'Mouth Opening': 0.5 },
-      },
-    ])
+  const controls = tool.value.controls
+  if (controls?.sliders) {
+    editorStore.initSliders(
+      controls.sliders.map((s) => ({
+        label: s.label,
+        min: s.min,
+        max: s.max,
+        step: s.step,
+        value: s.defaultValue,
+      })),
+    )
+  } else if (tool.value.editorType === 'sliders' || tool.value.editorType === 'time-slider') {
+    editorStore.initSliders([{ label: 'Intensity', min: 0, max: 1, step: 0.01, value: 0.5 }])
   } else {
-    editorStore.initSliders([
-      { label: 'Intensity', min: 0, max: 1, step: 0.01, value: 0.5 },
-      { label: 'Smoothness', min: 0, max: 1, step: 0.01, value: 0.5 },
-    ])
-    editorStore.initPresets([])
+    editorStore.initSliders([])
   }
+  editorStore.initPresets([])
 }
 
 function triggerFileInput(): void {
@@ -210,8 +526,7 @@ function onSliderChange(sliderId: string, event: Event): void {
 }
 
 async function handleProcess(): Promise<void> {
-  if (!editorStore.canProcess || !editorStore.previewUrl) return
-
+  if (!editorStore.canProcess || !editorStore.previewUrl || !tool.value) return
   editorStore.setProcessing(true)
 
   const params: Record<string, number> = {}
@@ -219,8 +534,7 @@ async function handleProcess(): Promise<void> {
     params[s.label] = s.value
   }
 
-  const result = await processImage(tool.value!.id, editorStore.previewUrl, params)
-
+  const result = await processImage(tool.value.id, editorStore.previewUrl, params)
   if (result.success && result.data) {
     editorStore.setResult(result.data.resultUrl, result.data.creditsUsed)
   } else {
@@ -228,12 +542,18 @@ async function handleProcess(): Promise<void> {
   }
 }
 
+async function handlePromptProcess(): Promise<void> {
+  if (!tool.value || !promptText.value.trim()) return
+  editorStore.setProcessing(true)
+  await new Promise((r) => setTimeout(r, 3000))
+  editorStore.setResult('/placeholder-result.png', 2)
+}
+
 function handleClear(): void {
   clearFile()
   editorStore.reset()
 }
 
-// Watch for route changes
 watch(
   () => route.params.toolSlug,
   (slug) => {
@@ -254,7 +574,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 .tool-page {
   padding: $space-8 0 $space-24;
-  min-height: calc(100vh - $header-height);
+  min-height: calc(100vh - #{$header-height});
 
   &__header {
     text-align: center;
@@ -266,7 +586,6 @@ onMounted(() => {
     font-weight: $font-weight-bold;
     margin-bottom: $space-3;
     @include gradient-text;
-
     @include md {
       font-size: $font-size-4xl;
     }
@@ -281,17 +600,19 @@ onMounted(() => {
     font-size: $font-size-lg;
     color: $color-text-secondary;
     max-width: 600px;
-    margin: 0 auto;
+    margin: 0 auto $space-4;
+  }
+
+  &__cost-badge {
+    @include badge($color-secondary);
   }
 
   &__not-found {
     text-align: center;
     padding: $space-20 0;
-
     h2 {
       margin-bottom: $space-4;
     }
-
     p {
       margin-bottom: $space-8;
     }
@@ -307,7 +628,6 @@ onMounted(() => {
     text-align: center;
     cursor: pointer;
     @include transition(border-color, background-color);
-
     &:hover,
     &--dragging {
       border-color: $color-primary;
@@ -337,12 +657,11 @@ onMounted(() => {
     color: $color-text-muted;
   }
 
-  // Editor
+  // Editor layout
   &__editor {
     display: grid;
     grid-template-columns: 1fr;
     gap: $space-8;
-
     @include lg {
       grid-template-columns: 1fr 380px;
     }
@@ -418,12 +737,10 @@ onMounted(() => {
     font-weight: $font-weight-medium;
     color: $color-text-secondary;
     @include transition(all);
-
     &:hover {
       border-color: $color-primary;
       color: $color-text;
     }
-
     &--active {
       background: $color-primary;
       border-color: $color-primary;
@@ -464,7 +781,6 @@ onMounted(() => {
     background: $color-border;
     border-radius: $radius-full;
     outline: none;
-
     &::-webkit-slider-thumb {
       -webkit-appearance: none;
       width: 16px;
@@ -473,13 +789,173 @@ onMounted(() => {
       background: $color-primary;
       cursor: pointer;
       @include transition(box-shadow);
-
       &:hover {
         box-shadow: 0 0 0 4px rgba($color-primary, 0.2);
       }
     }
+    &--large {
+      height: 6px;
+      &::-webkit-slider-thumb {
+        width: 20px;
+        height: 20px;
+      }
+    }
   }
 
+  // Time slider
+  &__time-slider {
+    @include flex-column;
+    gap: $space-3;
+  }
+
+  &__time-labels {
+    @include flex-between;
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+  }
+
+  &__slider-value-center {
+    text-align: center;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    color: $color-primary-light;
+    font-family: $font-family-mono;
+    margin-top: $space-1;
+  }
+
+  // Prompt editor
+  &__prompt-editor {
+    max-width: 800px;
+    margin: 0 auto;
+    @include flex-column;
+    gap: $space-6;
+  }
+
+  &__prompt-section {
+    @include flex-column;
+    gap: $space-2;
+  }
+
+  &__textarea {
+    width: 100%;
+    padding: $space-4;
+    background: $color-bg-card;
+    border: 1px solid $color-border;
+    border-radius: $radius-lg;
+    color: $color-text;
+    font-family: $font-family;
+    font-size: $font-size-base;
+    resize: vertical;
+    min-height: 100px;
+    @include transition(border-color);
+    &:focus {
+      border-color: $color-primary;
+    }
+    &::placeholder {
+      color: $color-text-muted;
+    }
+  }
+
+  &__settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: $space-4;
+  }
+
+  &__setting {
+    @include flex-column;
+    gap: $space-2;
+  }
+
+  &__setting-label {
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    color: $color-text-secondary;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  &__select {
+    width: 100%;
+    padding: $space-2 $space-3;
+    background: $color-bg-elevated;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    color: $color-text;
+    font-size: $font-size-sm;
+    @include transition(border-color);
+    &:focus {
+      border-color: $color-primary;
+    }
+  }
+
+  &__toggle {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      &:checked + .tool-page__toggle-slider {
+        background: $color-primary;
+        &::before {
+          transform: translateX(20px);
+        }
+      }
+    }
+  }
+
+  &__toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: $color-border;
+    border-radius: $radius-full;
+    cursor: pointer;
+    @include transition(background-color);
+    &::before {
+      content: '';
+      position: absolute;
+      left: 2px;
+      bottom: 2px;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      @include transition(transform);
+    }
+  }
+
+  &__prompt-result {
+    @include flex-column;
+    gap: $space-3;
+  }
+
+  // Dual upload
+  &__dual-upload {
+    display: flex;
+    align-items: center;
+    gap: $space-6;
+    max-width: 900px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  &__upload--half {
+    flex: 1;
+    min-width: 280px;
+    max-width: 400px;
+  }
+
+  &__dual-arrow {
+    font-size: $font-size-3xl;
+    color: $color-text-muted;
+    flex-shrink: 0;
+  }
+
+  // Common
   &__process-btn {
     width: 100%;
     min-height: 48px;
